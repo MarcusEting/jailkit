@@ -552,12 +552,37 @@ int main (int argc, char **argv) {
 
 	/* now execute the jailed shell */
 	/*execl(pw->pw_shell, pw->pw_shell, NULL);*/
-	newargv = malloc0((argc+1)*sizeof(char *));
-	newargv[0] = shell;
-	for (i=1;i<argc;i++) {
-		newargv[i] = argv[i];
+	// newargv = malloc0((argc+1)*sizeof(char *));
+	// newargv[0] = shell;
+	// for (i=1;i<argc;i++) {
+	// 	newargv[i] = argv[i];
+	// }
+	// execv(shell, newargv);
+
+	char *invokedname;
+	char *bname;
+	char *path2 = strdup(shell);
+	bname = basename(path2);
+
+	if( argv[0][0] == '-' )
+	{
+		DEBUG_MSG("first char is a dash \n");
+
+		char buf[48];
+		snprintf(buf, sizeof buf, "-%s", bname);
+		invokedname = buf;
+
 	}
-	execv(shell, newargv);
+	else
+	{
+		DEBUG_MSG("first char is not a dash \n");
+		invokedname = bname;
+	}
+
+
+	DEBUG_MSG("invoked name: %s \n", invokedname);
+	execl(shell, invokedname, NULL);
+
 	DEBUG_MSG(strerror(errno));
 	syslog(LOG_ERR, "ERROR: failed to execute shell %s for user %s (%d), check the permissions and libraries of %s/%s",shell,pw->pw_name,getuid(),jaildir,shell);
 
